@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cửa Hàng Quần Áo 2hand Độc Đáo</title>
+    <link rel="stylesheet" href="style.css">
+    <script> 
+        document.addEventListener('DOMContentLoaded', () => {
+    const products = [
+        {
+            id: 1,
+            name: 'Áo sơ mi Vintage kẻ sọc',
+            price: 180000,
+            image: 'https://via.placeholder.com/300x300?text=Ao+So+Mi+1', // Thay bằng URL ảnh thật của bạn
+            description: 'Áo sơ mi dáng rộng, chất liệu cotton, phù hợp cho cả nam và nữ. Tình trạng 90%.'
+        },
+        {
+            id: 2,
+            name: 'Quần Jeans ống rộng Retro',
+            price: 250000,
+            image: 'https://via.placeholder.com/300x300?text=Quan+Jeans+2', // Thay bằng URL ảnh thật của bạn
+            description: 'Quần jeans wash nhẹ, ống rộng, phong cách thập niên 90. Tình trạng 95%.'
+        },
+        {
+            id: 3,
+            name: 'Váy hoa nhí Maxi',
+            price: 220000,
+            image: 'https://via.placeholder.com/300x300?text=Vay+Hoa+3', // Thay bằng URL ảnh thật của bạn
+            description: 'Váy maxi voan nhẹ nhàng, họa tiết hoa nhí cổ điển. Tình trạng 85% (có chút sờn nhẹ).'
+        },
+        {
+            id: 4,
+            name: 'Áo khoác Bomber nỉ',
+            price: 300000,
+            image: 'https://via.placeholder.com/300x300?text=Ao+Khoac+4', // Thay bằng URL ảnh thật của bạn
+            description: 'Áo khoác bomber chất liệu nỉ dày dặn, màu xanh rêu. Tình trạng 90%.'
+        }
+        // Thêm các sản phẩm khác của bạn ở đây
+    ];
+
+    const productGrid = document.querySelector('#products');
+    const cartIcon = document.getElementById('cart-icon');
+    const cartCount = document.getElementById('cart-count');
+    const cartModal = document.getElementById('cart-modal');
+    const closeButton = document.querySelector('.close-button');
+    const cartItemsContainer = document.getElementById('cart-items');
+    const cartTotalPrice = document.getElementById('cart-total-price');
+
+    let cart = []; // Mảng chứa các sản phẩm trong giỏ hàng
+
+    // Hàm định dạng tiền tệ Việt Nam Đồng
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+    };
+
+    // Render sản phẩm lên trang
+    function renderProducts() {
+        productGrid.innerHTML = ''; // Xóa sản phẩm cũ trước khi render lại
+        products.forEach(product => {
+            const productCard = document.createElement('div');
+            productCard.classList.add('product-card');
+            productCard.innerHTML = `
+                <img src="${product.image}" alt="${product.name}">
+                <h4>${product.name}</h4>
+                <p class="price">${formatCurrency(product.price)}</p>
+                <button class="add-to-cart" data-id="${product.id}">Thêm vào Giỏ Hàng</button>
+            `;
+            productGrid.appendChild(productCard);
+        });
+
+        // Gắn sự kiện cho các nút "Thêm vào Giỏ Hàng"
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const productId = parseInt(e.target.dataset.id);
+                addToCart(productId);
+            });
+        });
+    }
+
+    // Thêm sản phẩm vào giỏ hàng
+    function addToCart(productId) {
+        const productToAdd = products.find(p => p.id === productId);
+        if (productToAdd) {
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                // Tăng số lượng nếu sản phẩm đã có trong giỏ (đối với đồ 2hand, thường mỗi món là độc nhất nên không tăng số lượng)
+                // Tuy nhiên, để làm giỏ hàng đơn giản, ta vẫn thêm nếu muốn
+                // existingItem.quantity++;
+                alert('Sản phẩm này là độc nhất, chỉ có một chiếc trong kho!');
+            } else {
+                cart.push({ ...productToAdd, quantity: 1 });
+                alert(`Đã thêm "${productToAdd.name}" vào giỏ hàng.`);
+            }
+            updateCartDisplay();
+        }
+    }
+
+    // Cập nhật hiển thị giỏ hàng
+    function updateCartDisplay() {
+        cartCount.textContent = cart.length; // Số lượng món trong giỏ
+        cartItemsContainer.innerHTML = '';
+        let total = 0;
+
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = '<p>Giỏ hàng trống.</p>';
+        } else {
+            cart.forEach(item => {
+                const cartItemDiv = document.createElement('div');
+                cartItemDiv.classList.add('cart-item');
+                cartItemDiv.innerHTML = `
+                    <span class="cart-item-name">${item.name}</span>
+                    <span class="cart-item-price">${formatCurrency(item.price)}</span>
+                `;
+                cartItemsContainer.appendChild(cartItemDiv);
+                total += item.price * item.quantity;
+            });
+        }
+        cartTotalPrice.textContent = formatCurrency(total);
+    }
+
+    // Hiển thị modal giỏ hàng
+    cartIcon.addEventListener('click', (e) => {
+        e.preventDefault();
+        cartModal.style.display = 'block';
+        updateCartDisplay(); // Cập nhật lại giỏ hàng khi mở modal
+    });
+
+    // Đóng modal giỏ hàng
+    closeButton.addEventListener('click', () => {
+        cartModal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target === cartModal) {
+            cartModal.style.display = 'none';
+        }
+    });
+
+    // Khởi tạo: render sản phẩm khi trang tải xong
+    renderProducts();
+    updateCartDisplay(); // Cập nhật số lượng ban đầu trên icon giỏ hàng
+});
+    </script>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1><a href="/">Vintage Finds</a></h1>
+            <nav>
+                <ul>
+                    <li><a href="#products">Sản Phẩm</a></li>
+                    <li><a href="#about">Về Chúng Tôi</a></li>
+                    <li><a href="#contact">Liên Hệ</a></li>
+                    <li><a href="#" id="cart-icon">Giỏ Hàng (<span id="cart-count">0</span>)</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h2>Khám Phá Phong Cách Cũ, Sáng Tạo Mới</h2>
+            <p>Những món đồ 2hand được chọn lọc kỹ càng, mang đậm dấu ấn thời gian.</p>
+            <a href="#products" class="btn">Mua Ngay</a>
+        </section>
+
+        <section id="products" class="product-grid">
+            <h3>Sản Phẩm Mới Nhất</h3>
+            </section>
+
+        <section id="about" class="about-us">
+            <h3>Về Chúng Tôi</h3>
+            <p>Chúng tôi tin rằng mỗi món đồ 2hand đều mang một câu chuyện. "Vintage Finds" là nơi bạn có thể tìm thấy những chiếc áo, quần, váy... đã qua sử dụng nhưng vẫn giữ được giá trị và phong cách riêng.</p>
+            <p>Mục tiêu của chúng tôi là mang đến cho bạn những lựa chọn thời trang bền vững, độc đáo và giá cả phải chăng.</p>
+        </section>
+
+        <section id="contact" class="contact">
+            <h3>Liên Hệ</h3>
+            <p>Có câu hỏi? Hãy liên hệ với chúng tôi!</p>
+            <p>Email: <a href="mailto:info@vintagefinds.com">info@vintagefinds.com</a></p>
+            <p>Điện thoại: 09xx.xxx.xxx</p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Vintage Finds. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <h4>Giỏ Hàng Của Bạn</h4>
+            <div id="cart-items">
+                <p>Giỏ hàng trống.</p>
+            </div>
+            <p class="cart-total">Tổng cộng: <span id="cart-total-price">0đ</span></p>
+            <button class="btn checkout-btn">Thanh Toán (Chưa hoạt động)</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
